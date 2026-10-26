@@ -1,6 +1,5 @@
-
-import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
+import * as ImagePicker from "expo-image-picker";
+import { useState } from "react";
 import {
   Alert,
   Button,
@@ -10,36 +9,47 @@ import {
   Text,
   TextInput,
   View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const [photos, setPhotos] = useState<{ id: string; uri: string }[]>([]);
+  const [showHello, setShowHello] = useState(false);
+  const [inputText, setInputText] = useState("");
+  const [submittedText, setSubmittedText] = useState("");
 
   const loadPhotos = async () => {
-  try {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsMultipleSelection: true,
-      selectionLimit: 10,
-      quality: 1,
-    });
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsMultipleSelection: true,
+        selectionLimit: 10,
+        quality: 1,
+      });
 
-    if (result.canceled) {
-      return;
+      if (result.canceled) {
+        return;
+      }
+
+      setPhotos(
+        result.assets.map((asset, index) => ({
+          id: asset.assetId ?? `${asset.uri}-${index}`,
+          uri: asset.uri,
+        })),
+      );
+    } catch (error) {
+      console.error("Gagal memilih foto:", error);
+      Alert.alert("Terjadi kesalahan", String(error));
     }
+  };
 
-    setPhotos(
-      result.assets.map((asset, index) => ({
-        id: asset.assetId ?? `${asset.uri}-${index}`,
-        uri: asset.uri,
-      }))
-    );
-  } catch (error) {
-    console.error('Gagal memilih foto:', error);
-    Alert.alert('Terjadi kesalahan', String(error));
-  }
-};
+  const toggleHello = () => {
+    setShowHello((previous) => !previous);
+  };
+
+  const handleSubmit = () => {
+    setSubmittedText(inputText);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -47,18 +57,35 @@ export default function HomeScreen() {
         <Text style={styles.title}>Belajar React Native</Text>
 
         <Image
-          source={{ uri: 'https://reactnative.dev/img/tiny_logo.png' }}
+          source={{ uri: "https://reactnative.dev/img/tiny_logo.png" }}
           style={styles.image}
         />
 
+        <TextInput style={styles.input} placeholder="Masukkan nama kamu" />
+        <Button
+          title={showHello ? "Sembunyikan" : "Tampilkan"}
+          onPress={toggleHello}
+        />
+
+        {showHello && <Text style={styles.resultText}>Hello World</Text>}
         <TextInput
           style={styles.input}
-          placeholder="Masukkan nama kamu"
+          placeholder="Masukkan teks untuk di-submit"
+          value={inputText}
+          onChangeText={setInputText}
         />
+
+        <Button title="Submit" onPress={handleSubmit} />
+
+        {submittedText !== "" && (
+          <Text style={styles.resultText}>
+            Teks yang dikirim: {submittedText}
+          </Text>
+        )}
 
         <Button
           title="Tampilkan Alert"
-          onPress={() => Alert.alert('Primakara Luar Biasa')}
+          onPress={() => Alert.alert("Primakara Luar Biasa")}
         />
 
         <View style={styles.box1} />
@@ -66,10 +93,7 @@ export default function HomeScreen() {
         <View style={styles.box3} />
 
         <View style={styles.galleryButton}>
-          <Button
-            title="Pilih Maksimal 10 Foto"
-            onPress={loadPhotos}
-          />
+          <Button title="Pilih Maksimal 10 Foto" onPress={loadPhotos} />
         </View>
 
         <View style={styles.gallery}>
@@ -86,30 +110,29 @@ export default function HomeScreen() {
   );
 }
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: 'black',
+    fontWeight: "bold",
+    color: "black",
     marginBottom: 20,
   },
   box1: {
     flex: 1,
-    backgroundColor: 'powderblue',
+    backgroundColor: "powderblue",
   },
   box2: {
     flex: 1,
-    backgroundColor: 'skyblue',
+    backgroundColor: "skyblue",
   },
   box3: {
     flex: 1,
-    backgroundColor: 'steelblue',
+    backgroundColor: "steelblue",
   },
   image: {
     width: 100,
@@ -118,7 +141,7 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 48,
-    borderColor: 'gray',
+    borderColor: "gray",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
@@ -129,13 +152,18 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   gallery: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 8,
   },
   galleryImage: {
     width: 100,
     height: 100,
   },
+  resultText: {
+    fontSize: 18,
+    color: "black",
+    marginTop: 12,
+    marginBottom: 12,
+  },
 });
-
